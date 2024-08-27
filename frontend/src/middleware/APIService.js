@@ -179,7 +179,14 @@ const APIService = {
     },
     addCar: async({vehicleNo, model, carType, locationID, photoUrl}) => {
       try {
-        const response = await api.post('/api/addCar', {vehicleNo, model, carType, locationID, photoUrl})
+        const token = await getIDToken();
+          
+        const headers ={
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        }
+        const response = await api.post('/api/cars', {vehicleNo, model, carType, locationID, photoUrl}, { headers })
+        // const response = await api.post('/api/addCar', {vehicleNo, model, carType, locationID, photoUrl}, {headers})
         console.log('Added car!')
 
         return response.data
@@ -190,7 +197,15 @@ const APIService = {
     },
     updateCar: async({vehicleNo, model, carType, locationID, photoUrl}) => {
       try {
-        await api.put('/api/updateCar', {vehicleNo, model, carType, locationID, photoUrl})
+        const token = await getIDToken();
+          
+        const headers ={
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        }
+
+        await api.put(`/api/cars/${vehicleNo}`, {vehicleNo, model, carType, locationID, photoUrl}, {headers})
+
         console.log('Updated!')
       } catch (error) {
         console.error('Error updating car:', error.message);   
@@ -200,7 +215,13 @@ const APIService = {
     ,
     deleteCar: async(vehicleNo) => {
       try {
-        await api.delete('/api/deleteCar', {params: {vehicleNo}})
+        const token = await getIDToken();
+          
+        const headers ={
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        }
+        await api.delete(`/api/cars/${vehicleNo}`, {params: {vehicleNo}, headers})
       } catch (error) {
         console.log('Error deleting car: ', error.message)
       }
