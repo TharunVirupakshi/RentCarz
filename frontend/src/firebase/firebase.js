@@ -22,7 +22,7 @@ const auth = getAuth(app);
 // Disable persistence
 
 const getIDToken = () => {
-  return auth.currentUser.getIdToken(true)
+  return auth.currentUser?.getIdToken(true)
     .then(idToken => {
       return idToken;
     })

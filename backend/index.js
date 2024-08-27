@@ -35,11 +35,11 @@ app.get('/', (req, res)=>{
 
 // Get routes
 
-// const carRoutes = require('./routes/carRoutes')
+const carRoutes = require('./routes/carRoutes')
 
 
 
-// app.use('/api/cars',carRoutes);
+app.use('/api/cars',carRoutes);
 
 //Cars endpoints
 app.post('/api/addCar', async(req, res)=>{
@@ -423,6 +423,12 @@ app.get('/api/checkAvailability', (req, res)=>{
 })
 
 
+
+const orderRoutes = require('./routes/orderRoutes')
+const paymentRoutes = require('./routes/paymentRoutes')
+app.use('/api/orders', orderRoutes)
+app.use('/api/payments', paymentRoutes)
+
 app.post('/api/createOrder', async(req, res)=>{
     try {
         const { carID, custID, discountID, totCost } = req.body;
@@ -469,6 +475,50 @@ app.post('/api/createOrder', async(req, res)=>{
       }
 
 })
+
+app.post('/api/createPayment', async(req, res)=>{
+    try {
+        const { orderID, custID, totCost, paymentMethod } = req.body; 
+
+        const transaction_query = "INSERT INTO transaction (transcName, amount) VALUES(? ,? )"
+        
+        const sql = 'INSERT INTO payment (amount, payment_method, date, orderID, transactionID, payerID, isSuccess) VALUES(?, ?, ?, ?, ?, ?, ?)'
+        const orderDate = new Date();
+        
+        db.query(transaction_query,['cust_payment', totCost], (err, result)=>{
+            if(err){
+                const values = [totCost, paymentMethod, orderDate, orderID, null, custID, false]
+                db.query(sql, values, (err, result) => {
+                    if(err){
+                        console.error('Error processing payment', err.message);
+                        res.status(500).json({ success: false, error: 'Internal Server Error' });
+                    }
+                })
+
+                console.error('Error processing payment, transaction failure:', err.message);
+                res.status(500).json({ success: false, error: 'Internal Server Error' });
+            }else{
+                const tran_ID = result.insertId
+                const values = [totCost, paymentMethod, orderDate, orderID, tran_ID, custID, true]
+                db.query(sql, values, (err, result) => {
+                    if(err){
+                        console.error('Error processing payment', err.message);
+                        res.status(500).json({ success: false, error: 'Internal Server Error' });
+                    }else{
+                        res.status(201).json({ success: true, payment: result });
+
+                    }
+                })
+            }
+        } )
+
+    } catch (error) {
+        console.error('Error processing payment:', error.message);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+})
+
+
 
 
 // Coupons endpoints
@@ -711,6 +761,7 @@ app.delete('/api/deleteLocation', (req, res) => {
         WHERE locationID = ? AND deleted_at IS NULL;
     `;
 
+    
     // Execute the SQL query to soft delete the location
     db.query(softDelete, [locationID], (err, result) => {
         if (err) {
@@ -909,47 +960,6 @@ app.delete('/api/deleteTripAssistant', (req, res) => {
 
 
 
-app.post('/api/createPayment', async(req, res)=>{
-    try {
-        const { orderID, custID, totCost, paymentMethod } = req.body; 
-
-        const transaction_query = "INSERT INTO transaction (transcName, amount) VALUES(? ,? )"
-        
-        const sql = 'INSERT INTO payment (amount, payment_method, date, orderID, transactionID, payerID, isSuccess) VALUES(?, ?, ?, ?, ?, ?, ?)'
-        const orderDate = new Date();
-        
-        db.query(transaction_query,['cust_payment', totCost], (err, result)=>{
-            if(err){
-                const values = [totCost, paymentMethod, orderDate, orderID, null, custID, false]
-                db.query(sql, values, (err, result) => {
-                    if(err){
-                        console.error('Error processing payment', err.message);
-                        res.status(500).json({ success: false, error: 'Internal Server Error' });
-                    }
-                })
-
-                console.error('Error processing payment, transaction failure:', err.message);
-                res.status(500).json({ success: false, error: 'Internal Server Error' });
-            }else{
-                const tran_ID = result.insertId
-                const values = [totCost, paymentMethod, orderDate, orderID, tran_ID, custID, true]
-                db.query(sql, values, (err, result) => {
-                    if(err){
-                        console.error('Error processing payment', err.message);
-                        res.status(500).json({ success: false, error: 'Internal Server Error' });
-                    }else{
-                        res.status(201).json({ success: true, payment: result });
-
-                    }
-                })
-            }
-        } )
-
-    } catch (error) {
-        console.error('Error processing payment:', error.message);
-        res.status(500).json({ success: false, error: 'Internal Server Error' });
-    }
-})
 
 
 

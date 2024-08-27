@@ -3,8 +3,8 @@ import './App.css'
 
 import {Navigate, Route, Routes, useNavigate} from 'react-router-dom';
 import { CarListing, Homepage, Order, Payment, AuthPage, ProductPage, MyTrips, ProfilePage, AdminAuthPage, AdminDashboard, ManageCars, ManageDiscounts, ManageLocations, ManageStaff } from './pages';
-import {auth} from './firebase/firebase'
-import { onAuthStateChanged } from "firebase/auth";
+import {auth, getIDToken} from './firebase/firebase'
+import {onAuthStateChanged } from "firebase/auth";
 import {Navbar} from './components'
 import {signOut} from './middleware/AuthService'
 import PrivateRoute from './components/privateRoute/PrivateRoute';
@@ -20,6 +20,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigte = useNavigate();
+
+  
 
   useEffect(()=>{
 

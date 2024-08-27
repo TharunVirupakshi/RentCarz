@@ -83,7 +83,7 @@ router.post('/', (req, res)=>{
                 console.error('[ERROR] Error adding car:', err.message);
                 return res.status(500).json({ error: err.message });
             }
-            console.log('[INFO] Car added successfully:', result);
+            // console.log('[INFO] Car added successfully:', result);
             res.json({ success: true, message: 'Added car!' });
         });
     });

@@ -1,6 +1,7 @@
 import { LOCAL_SERVER } from "../constants"
 import axios from 'axios';
 import {getIDToken} from '../firebase/firebase'
+import { applyActionCode } from "firebase/auth";
 
 
 
@@ -21,7 +22,7 @@ const api = axios.create({
 const APIService = {
   getCars: async () => {
     try {
-      const response = await api.get('/api/getCars');
+      const response = await api.get('/api/cars');
       console.log('Got cars: ', response.data)
       return response.data;
     } catch (error) {
@@ -32,7 +33,7 @@ const APIService = {
   getCar: async(vehicleNo) => {
     try {
       console.log('Getting car ', vehicleNo)
-      const response = await api.get('/api/getCar', { params: {vehicleNo}});
+      const response = await api.get('/api/cars', { params: {vehicleNo}});
       console.log('Got car: ', response.data)
       return response.data
     } catch (error) {
@@ -42,8 +43,26 @@ const APIService = {
   },
   createOrder: async({vehicleNo, custID, discountID, totCost})=>{
     try {
+
+        const token = await getIDToken();
+      
+        const headers ={
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        }
+
+        const body = {
+          carID: vehicleNo,
+          custID,
+          discountID,
+          totCost
+        }
+        
         console.log('Creating order for car ', vehicleNo)
-        const response = await api.post('/api/createOrder', {carID: vehicleNo, custID, discountID, totCost});
+        const response = await api.post('/api/orders',body, {headers})
+        
+        // const response = await api.post('/api/createOrder', {carID: vehicleNo, custID, discountID, totCost});
+
         console.log('Order created: ', response.data)
         return response.data
       } catch (error) {
@@ -53,9 +72,15 @@ const APIService = {
     },
  createPayment: async(data)=>{
       try {
+          const token = await getIDToken();
+        
+          const headers ={
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'  
+          }
           const {orderID, custID, totCost, paymentMethod} = data
           console.log('Processing payment ', data)
-          const response = await api.post('/api/createPayment', {orderID, custID, totCost, paymentMethod}) 
+          const response = await api.post('/api/payments', {orderID, custID, totCost, paymentMethod}, {headers}) 
           return response.data
       } catch (error) {
         console.error('Error processing payment:', error.message);
