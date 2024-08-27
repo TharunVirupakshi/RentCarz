@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middlewares/authMiddleware');
+const { authenticateToken, authenticateAdmin } = require('../middlewares/authMiddleware');
 const db = require('../config/db'); // Import the database connection
+const { CURRENT_DATE } = require('../config/dateRef');
 
 // Route to get all cars
-router.get('/', (req, res) => {
+router.get('/', authenticateToken, (req, res) => {
     // SQL query to select all cars from the 'car' table
     console.log(`[INFO] Received GET request to /api/cars`);
 
@@ -24,9 +25,14 @@ router.get('/', (req, res) => {
 });
 
 // Route to get a specific car by vehicle number
-router.get('/:vehicleNo', (req, res) => {
+router.get('/:vehicleNo', authenticateToken, (req, res) => {
     const vehicleNo = req.params.vehicleNo;
-    console.log(`[INFO] Received GET request to /api/cars/${vehicleNo}`);
+
+    if(!vehicleNo){
+        res.status(400).json({success: false, error: 'Missing fields!'})
+    }
+
+    console.log(`[INFO] Received GET request to /api/cars/`, vehicleNo);
 
     const sql = `SELECT * FROM car, location WHERE car.vehicleNo = ? AND car.locationID = location.locationID AND car.deleted_at IS NULL`;
 
@@ -47,7 +53,52 @@ router.get('/:vehicleNo', (req, res) => {
     });
 });
 
-router.post('/', (req, res)=>{
+router.get('/availability/:carID', authenticateToken, (req, res)=>{
+    const { carID } = req.params.carID
+    console.log('[INFO] Received GET request at /api/cars/availability')
+    const sql = `
+    SELECT 
+        rentalEndDate
+    FROM 
+        getsRented 
+    WHERE 
+        carID = ? 
+    ORDER BY 
+        rentalEndDate DESC
+    LIMIT 1;
+    `;
+
+
+    db.query(sql, [carID], (err, result) => {
+        if (err) {
+            console.error(`Error checking availability for carID ${carID}:`, err.message);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            const latestRentalEndDate = result[0]?.rentalEndDate;
+            // console.log('Fetched end date before:', latestRentalEndDate)
+             // Convert UTC to local timezone
+             const localLatestRentalEndDate = new Date(latestRentalEndDate + 'Z');
+
+            
+
+            //  console.log('Fetched end date:', localLatestRentalEndDate)
+            //  console.log('Curent date:', CURRENT_DATE)
+             var isAvailable = true;
+            if(latestRentalEndDate)
+            isAvailable =  new Date(localLatestRentalEndDate).toLocaleDateString() < CURRENT_DATE.toLocaleDateString();
+
+            // console.log('Availability: ', isAvailable);
+            // console.log('Availability: ', isAvailable)
+             res.json({ carID, etrDate : localLatestRentalEndDate, isAvailable });
+        }
+    });
+})
+
+
+
+
+// ADMIN ROUTES
+router.post('/',authenticateToken, authenticateAdmin, (req, res)=>{
     const {vehicleNo, carType, model, locationID, photoUrl } = req.body
     console.log('[INFO] Received POST request to /api/cars')
     console.log('[INFO] Request body:', req.body);
@@ -89,7 +140,7 @@ router.post('/', (req, res)=>{
     });
 })
 
-router.put('/:vehicleNo',(req, res) =>{
+router.put('/:vehicleNo', authenticateToken, authenticateAdmin, (req, res) =>{
     const {vehicleNo, carType, model, locationID, photoUrl } = req.body
 
     console.log('[INFO] Received PUT request to /api/cars')
@@ -172,7 +223,7 @@ router.put('/:vehicleNo',(req, res) =>{
 
 })
 
-router.delete('/:vehicleNo', (req, res) => {
+router.delete('/:vehicleNo', authenticateToken, authenticateAdmin, (req, res) => {
     const { vehicleNo } = req.query;
     console.log('[INFO] Received DELETE request to /api/cars/' + vehicleNo);
 
@@ -197,6 +248,8 @@ router.delete('/:vehicleNo', (req, res) => {
         }
     });
 })
+
+
 
 
 module.exports = router;

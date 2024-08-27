@@ -403,20 +403,20 @@ app.get('/api/checkAvailability', (req, res)=>{
             res.status(500).json({ error: 'Internal Server Error' });
         } else {
             const latestRentalEndDate = result[0]?.rentalEndDate;
-            console.log('Fetched end date before:', latestRentalEndDate)
+            // console.log('Fetched end date before:', latestRentalEndDate)
              // Convert UTC to local timezone
              const localLatestRentalEndDate = new Date(latestRentalEndDate + 'Z');
 
             
 
-             console.log('Fetched end date:', localLatestRentalEndDate)
-             console.log('Curent date:', CURRENT_DATE)
+            //  console.log('Fetched end date:', localLatestRentalEndDate)
+            //  console.log('Curent date:', CURRENT_DATE)
              var isAvailable = true;
             if(latestRentalEndDate)
             isAvailable =  new Date(localLatestRentalEndDate).toLocaleDateString() < CURRENT_DATE.toLocaleDateString();
 
-            console.log('Availability: ', isAvailable);
-            console.log('Availability: ', isAvailable)
+            // console.log('Availability: ', isAvailable);
+            // console.log('Availability: ', isAvailable)
              res.json({ carID,etrDate : localLatestRentalEndDate, isAvailable });
         }
     });

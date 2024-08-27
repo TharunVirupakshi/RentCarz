@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {adminLogin} from '../../middleware/AuthService'
+import {adminLogin, signIn} from '../../middleware/AuthService'
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Label, TextInput } from 'flowbite-react';
 import { Alert } from 'flowbite-react';
@@ -22,8 +22,8 @@ const {login, logout} = useAdminAuth()
 const handleLogin = async (e) => {
   e.preventDefault();
   try {
-    const data = await adminLogin({email, password})
-    if(data.success){
+    const data = await signIn(email, password)
+    if(data){
         login()
     }
     // Redirect or perform other actions after successful login
@@ -37,8 +37,8 @@ const handleLogin = async (e) => {
 };
 
 
-return (<>
-
+return (
+<>
   {errorMessage && (
           <Alert color="failure" icon={HiInformationCircle} className="fixed">
             <span className="font-medium">Error!</span> {errorMessage}

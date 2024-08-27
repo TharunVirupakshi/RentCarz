@@ -22,7 +22,13 @@ const api = axios.create({
 const APIService = {
   getCars: async () => {
     try {
-      const response = await api.get('/api/cars');
+      const token = await getIDToken();
+          
+      const headers ={
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'  
+      }
+      const response = await api.get('/api/cars', {headers});
       console.log('Got cars: ', response.data)
       return response.data;
     } catch (error) {
@@ -32,8 +38,15 @@ const APIService = {
   },
   getCar: async(vehicleNo) => {
     try {
-      console.log('Getting car ', vehicleNo)
-      const response = await api.get('/api/cars', { params: {vehicleNo}});
+
+      const token = await getIDToken();
+          
+      const headers ={
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'  
+      }
+      // console.log('Getting car ', vehicleNo)
+      const response = await api.get(`/api/cars/${vehicleNo}`, { params: {vehicleNo}, headers});
       console.log('Got car: ', response.data)
       return response.data
     } catch (error) {
@@ -115,7 +128,14 @@ const APIService = {
     },
     checkAvailability: async(carID)=>{
         try {
-            const response = await api.get('/api/checkAvailability', {params: {carID}})
+            const token = await getIDToken();
+          
+            const headers ={
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'  
+            }
+            // const response = await api.get('/api/checkAvailability', {params: {carID}})
+            const response = await api.get(`/api/cars/availability/${carID}`, {params: {carID}, headers})
             console.log('Availability :', response)
             return response.data
         } catch (error) {
