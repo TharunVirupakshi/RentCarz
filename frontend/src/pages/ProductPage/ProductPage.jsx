@@ -1,7 +1,6 @@
 import {useEffect, useState} from 'react'
 import { useParams, Link } from 'react-router-dom';
 import APIService from '../../middleware/APIService';
-import carImg from '../../assets/maruti-suzuki-fronx-splendid-silver-with-bluish-black.jpg'
 import { Button } from 'flowbite-react';
 import NO_IMG from '../../assets/car_no_image_small.jpg'
 import { Spinner } from '../../components';
