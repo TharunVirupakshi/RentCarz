@@ -24,6 +24,34 @@ router.get('/', authenticateToken, (req, res) => {
     });
 });
 
+router.get('/search', (req, res) => {
+    const { search } = req.query; // Get the search term from query parameters
+  
+    if (!search) {
+      return res.status(400).json({ error: 'Search term is required' });
+    }
+  
+    // Revised SQL query with DISTINCT and proper join
+    const sql = `
+      SELECT DISTINCT car.vehicleNo, car.carType, car.model, car.locationID, car.deleted_at, car.photoUrl, location.branchName, location.address
+      FROM car
+      JOIN location ON car.locationID = location.locationID
+      WHERE (car.carType LIKE ? OR car.model LIKE ? OR location.branchName LIKE ?)
+      AND car.deleted_at IS NULL
+    `;
+    
+    const searchTerm = `%${search}%`; // Wildcards for partial matches
+  
+    db.query(sql, [searchTerm, searchTerm, searchTerm], (err, results) => {
+      if (err) {
+        console.error('Error executing search query:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+      res.json({ success: true, cars: results });
+    });
+});
+
+
 // Route to get a specific car by vehicle number
 router.get('/:vehicleNo', authenticateToken, (req, res) => {
     const vehicleNo = req.params.vehicleNo;
@@ -93,6 +121,7 @@ router.get('/availability/:carID', authenticateToken, (req, res)=>{
         }
     });
 })
+
 
 
 

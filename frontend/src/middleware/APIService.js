@@ -337,6 +337,16 @@ const APIService = {
             
         }
     },
+    
+    searchCar: async(searchText) => {
+      try {
+        const res = await api.get(`/api/cars/search`, {params: {search: searchText}})
+        return res.data
+      } catch (error) {
+        console.log('Error searching cars..')
+      }
+    }
+    ,
 
     
     getDemand: async(date)=>{
