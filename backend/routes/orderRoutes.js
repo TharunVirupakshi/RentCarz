@@ -3,57 +3,75 @@ const router = express.Router();
 const db = require('../config/db'); // Import the database connection
 const { authenticateToken } = require('../middlewares/authMiddleware'); // Import the middleware
 
-router.post('/', authenticateToken ,async(req, res)=>{
-    try {
-        const { carID, custID, discountID, totCost } = req.body;
-        console.log('[INFO] Received POST request to /api/orders', req.body)
-        if(!carID || !custID ){
-           res.status(400).json({success: false, error: 'Missing important feilds!'})
-           return
-        }
+router.post('/', authenticateToken, async (req, res) => {
+  const { carID, custID, discountID, totCost } = req.body;
+  console.log('[INFO] Received POST request to /api/orders', req.body);
 
-        const sql = 'INSERT INTO rentalOrder (carID, custID, asstID, discountID, totCost, orderDate) VALUES(?,?,?,?,?,?)'
-       
-        // Assign tripAsst
-          // Fetch a random assistant from the tripAsst table
-        const assignAsst = 'SELECT * FROM tripAsst WHERE tripAsst.deleted_at IS NULL ORDER BY RAND() LIMIT 1';
+  if (!carID || !custID) {
+      res.status(400).json({ success: false, error: 'Missing important fields!' });
+      return;
+  }
 
-        db.query(assignAsst, (err, result) => {
-            if (err) {
-                    console.error('Error assigning trip assistant:', err.message);
-                    res.status(500).json({ success: false, error: 'Internal Server Error' });
-                } else {
-                    const assistant = result[0]; // Assuming the result is an array, and you want the first assistant
-                    const asstID = assistant ? assistant.asstID : null;
-                    console.log('Assigned asst: ', asstID)
-                    if(asstID){
-                       // Generate current timestamp formatted for SQL date type
-                    const orderDate = new Date().toISOString().split('T')[0];
-                    const values = [carID, custID, asstID, discountID, totCost, orderDate]
-                    db.query(sql,values , (err, result) => {
-                        if (err) {
-                        console.error('[ERROR] Error creating order:', err.message);
-                        res.status(500).json({ success: false, error: 'Internal Server Error' });
-                        } else {
-                        res.status(201).json({ success: true, order: result });
-                        }
-                    });
-                    }else{
-                       res.status(500).json({ success: false, error: 'Internal Server Error' }); 
-                    }
+  try {
+      // Begin transaction
+      db.beginTransaction(async (err) => {
+          if (err) {
+              throw err;
+          }
 
-                } 
-        }
-        )
+          try {
+              // Fetch a random assistant from the tripAsst table
+              const assignAsstQuery = 'SELECT * FROM tripAsst WHERE tripAsst.deleted_at IS NULL ORDER BY RAND() LIMIT 1';
+              const assistant = await new Promise((resolve, reject) => {
+                  db.query(assignAsstQuery, (err, result) => {
+                      if (err) reject(err);
+                      resolve(result[0]);
+                  });
+              });
 
-       
-     
-      } catch (error) {
-        console.error('Error creating order:', error.message);
-        res.status(500).json({ success: false, error: 'Internal Server Error' });
-      }
+              if (!assistant) {
+                  throw new Error('No available assistant');
+              }
 
-})
+              const asstID = assistant.asstID;
+              const orderDate = new Date().toISOString().split('T')[0];
+
+              // Insert into rentalOrder table
+              const insertOrderQuery = 'INSERT INTO rentalOrder (carID, custID, asstID, discountID, totCost, orderDate) VALUES (?, ?, ?, ?, ?, ?)';
+              const values = [carID, custID, asstID, discountID, totCost, orderDate];
+
+              const orderResult = await new Promise((resolve, reject) => {
+                  db.query(insertOrderQuery, values, (err, result) => {
+                      if (err) reject(err);
+                      resolve(result);
+                  });
+              });
+
+              // Commit transaction if all is good
+              db.commit((err) => {
+                  if (err) {
+                      db.rollback(() => {
+                          throw err;
+                      });
+                  }
+
+                  console.log('[INFO] Order created successfully');
+                  res.status(201).json({ success: true, order: orderResult });
+              });
+          } catch (error) {
+              // Rollback transaction on error
+              db.rollback(() => {
+                  console.error('[ERROR] Transaction failed:', error.message);
+                  res.status(500).json({ success: false, error: 'Internal Server Error' });
+              });
+          }
+      });
+  } catch (error) {
+      console.error('[ERROR] Error creating order:', error.message);
+      res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
 
 
 

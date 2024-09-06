@@ -78,9 +78,12 @@ const Order = () => {
     const fetchData = async () => {
       try {
         setIsDemandLoading(true)
-        const data = await APIService.getDemand(startDate);
-        console.log('Demand ',  data?.demand);
-        setDemand(data?.demand);
+        console.log('Start Date: ', startDate)
+        const date = startDate.toISOString();
+        console.log('Formatted Date: ', date)
+        const data = await APIService.getDemand(date);
+        console.log('Demand ',  data);
+        setDemand(data);
       } catch (error) {
         console.error('Error fetching demand:', error.message);
       } finally {
@@ -91,13 +94,16 @@ const Order = () => {
     fetchData();
   },[startDate])
 
-  useEffect(()=>{
-    const rate = demand!=0 ? RATE_PER_DAY+RATE_PER_DAY*(demand/100) : RATE_PER_DAY
-    const price = (days * rate).toFixed(2);
-    const finalPrice = isNaN(price) ? RATE_PER_DAY * days : price;
-    setEstimatedPrice(finalPrice)
-  },[days, demand])
+  useEffect(() => {
+  const calculatePrice = () => {
+    const rate = demand !== 0 ? RATE_PER_DAY + RATE_PER_DAY * (demand / 100) : RATE_PER_DAY;
+    const price = (days * rate).toFixed(2); // `toFixed(2)` returns a string
+    const finalPrice = isNaN(Number(price)) ? RATE_PER_DAY * days : Number(price);
+    setEstimatedPrice(finalPrice);
+  };
 
+  calculatePrice();
+}, [days, demand]);
 
 
   //Apply Discount
@@ -273,15 +279,13 @@ const Order = () => {
 
 
 
-            <div className="flex flex-col pb-3 mt-5">
-                        <dt className="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Estimated Price: </dt>
-                        {isDemandLoading ? 
-                          <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4 animate-pulse"></div> :
-                          <dd className="text-lg font-semibold">₹{estimatedPrice ?? 'N/A'}</dd>
-                        }
-                       
-                        
-            </div>
+              <div className="flex flex-col pb-3 mt-5">
+                <dt className="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Estimated Price:</dt>
+                {isDemandLoading ?
+                  <div className="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4 animate-pulse"></div> :
+                  <dd className="text-lg font-semibold">₹{estimatedPrice ?? 'N/A'}</dd>
+                }
+              </div>
            </>)} {isPaymentModeOn && (
            <>
            <div className="my-5 block">

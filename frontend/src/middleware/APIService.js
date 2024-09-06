@@ -3,7 +3,8 @@ import axios from 'axios';
 import {getIDToken} from '../firebase/firebase'
 import { applyActionCode } from "firebase/auth";
 
-
+// const ML_SERVER = "http://172.17.9.138:5000"
+const ML_SERVER = "http://localhost"
 
 const api = axios.create({
     baseURL: LOCAL_SERVER,
@@ -340,11 +341,11 @@ const APIService = {
     
     getDemand: async(date)=>{
       try {
-        const response = await axios.get('http://127.0.0.1:5000/predict', {params:{date: date}})
+        const response = await axios.get(`${ML_SERVER}/predict`, {params:{date: date}})
 
-        console.log('Data from ML SERVER: ', response.data)
+        console.log('Data from ML SERVER: ', response.data?.result)
 
-        return response.data
+        return response.data?.result
         
       } catch (error) {
         console.error('Error fetching demand:', error.message); 

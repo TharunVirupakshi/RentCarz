@@ -12,4 +12,16 @@ db.connect(function (err) {
     console.log(`[INFO] Connected to MySQL`);
 });
 
+// Gracefully handle connection errors
+db.on('error', (err) => {
+    console.error(`[ERROR] MySQL connection error: ${err.message}`);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        // Reconnect if the connection is lost
+        console.error('[ERROR] MySQL connection was lost, reconnecting...');
+        db.connect();
+    } else {
+        throw err;
+    }
+});
+
 module.exports = db;
