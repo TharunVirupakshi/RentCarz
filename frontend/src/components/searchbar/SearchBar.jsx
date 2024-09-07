@@ -8,9 +8,9 @@ const SearchBar = ({handleSubmit}) => {
 
   const onSubmit = (e) => {
     e.preventDefault(); // Prevent default form submission
-    if (searchText.trim()) {
-      handleSubmit(searchText); // Call the submit handler only if search text is not empty
-    }
+    
+    handleSubmit(searchText); // Call the submit handler only if search text is not empty
+    
   };
 
   return (

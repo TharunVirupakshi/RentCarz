@@ -32,6 +32,7 @@ const Homepage = () => {
 
     if (!text) {
       setCars(allCars); // Reset to show all cars
+      console.log('Search reseted')
       return;
     }
 
