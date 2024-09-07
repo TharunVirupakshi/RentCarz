@@ -979,13 +979,24 @@ app.post('/api/createTrip', async(req, res) => {
     db.query(fetchPaymentSQL, [orderID], (fetchErr, paymentResult) => {
       if (fetchErr) {
         console.error('Error fetching payment:', fetchErr.message);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        throw new Error('Error fetching payment')
       }
   
       // Step 2: Check if the fetched payment has isSuccess true
       const mostRecentPayment = paymentResult[0];
       console.log('payment stats ', mostRecentPayment)
       if (!mostRecentPayment || mostRecentPayment.isSuccess !== 1) {
+
+        const updateCarStatusSQL = `
+          UPDATE carStatus
+          SET status = 'AVAILABLE'
+          WHERE carID = (SELECT carID FROM rentalOrder WHERE orderID = ?)
+        `;
+        db.query(updateCarStatusSQL, [orderID], (updateErr) => {
+          if (updateErr) {
+            console.error('Error updating car status to AVAILABLE:', updateErr.message);
+          }
+        });
         return res.status(400).json({ error: 'Payment was not successful for this order' });
       }
   
@@ -1009,6 +1020,19 @@ app.post('/api/createTrip', async(req, res) => {
       db.query(insertTripSQL, [orderDetails.carID, orderID, new Date(rentalStartDate),new Date(rentalEndDate)], (insertErr, insertResult) => {
         if (insertErr) {
           console.error('Error creating trip:', insertErr.message);
+        
+          // Trip creation failed, revert carStatus to AVAILABLE
+          const updateCarStatusSQL = `
+          UPDATE carStatus
+          SET status = 'AVAILABLE'
+          WHERE carID = ?
+        `;
+        db.query(updateCarStatusSQL, [orderDetails.carID], (updateErr) => {
+          if (updateErr) {
+            console.error('Error updating car status to AVAILABLE:', updateErr.message);
+          }
+        });
+
           return res.status(500).json({ error: 'Internal Server Error' });
         }
   

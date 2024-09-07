@@ -144,6 +144,26 @@ const APIService = {
             throw error;   
         }
     },
+    
+    updateCarStatus: async({carID, status}) => {
+
+      console.log('Updating car status..', {carID, status})
+
+      try {
+        const token = await getIDToken();
+        
+        const headers ={
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        }
+        const response = await api.post('/api/cars/status', {carID, status}, {headers})
+        return response.data
+      } catch (error) {
+        console.log('Err updating car status:', error.message)
+        throw error
+      }
+    }
+    ,
     getAllTrips: async(custID)=>{
         try {
             console.log('Fetching trips.....', custID)

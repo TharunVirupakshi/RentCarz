@@ -1,7 +1,7 @@
 import React from 'react'
 import withAuth from '../../components/withAuth/withAuth'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button } from 'flowbite-react'
+import { Button, Modal } from 'flowbite-react'
 import { HiOutlineArrowRight, HiShoppingCart } from 'react-icons/hi';
 import { useState } from 'react';
 import APIService from '../../middleware/APIService';
@@ -11,9 +11,12 @@ import { useEffect } from 'react';
 const Payment = () => {
   const location = useLocation();
   // Access the parameters from location.state
-  const { orderId, totalCost } = location.state;
+  const { orderId, totalCost, carID } = location.state;
   const [paymentData, setPaymentData] = useState(null)
   const [method, setMethod] = useState('credit')
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false);
 
   const navigate = useNavigate()
 
@@ -21,6 +24,22 @@ const Payment = () => {
     const data = location.state
     setPaymentData(data)
   },[])
+  
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if(isPaymentComplete) return;
+      e.preventDefault();
+      console.log('Exit Attempt!')
+      setShowCancelModal(true)
+      e.returnValue = ''; // Required for showing the browser's default dialog
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   console.log('Params: ', location.state)
 
@@ -38,7 +57,11 @@ const Payment = () => {
       });
       console.log('Payment status....', response);
 
-      if(response.success)  alert('Payment Success')
+      if(response.success){
+        setIsPaymentComplete(true)
+        alert('Payment Success')
+
+      }  
 
       //Create Trip....
     
@@ -56,8 +79,44 @@ const Payment = () => {
     }
   }
 
+
+  const handleCancelPayment = async () => {
+    try {
+      // Update carStatus back to AVAILABLE
+      const response = await APIService.updateCarStatus({
+        carID: carID,
+        status: 'AVAILABLE'
+      });
+
+      if (response.success) {
+        alert('Payment cancelled');
+        setShowCancelModal(false);
+        navigate('/'); // Redirect user to the orders page or another relevant page
+      }
+    } catch (error) {
+      console.log('Error cancelling payment....', error);
+    }
+  };
+
   return (<>
   <h2 class="text-4xl font-extrabold dark:text-white p-10 text-center">Payment</h2>
+    
+    {/* Cancel Modal */}
+    <Modal show={showCancelModal && !isPaymentComplete} onClose={() => setShowCancelModal(false)}>
+        <Modal.Header>Confirm Cancellation</Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to cancel the payment?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button color="gray" onClick={() => setShowCancelModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCancelPayment}>
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     <div className='flex w-screen justify-center items-center p-10 gap-16'>
       
       <div className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
@@ -91,7 +150,14 @@ const Payment = () => {
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
           </svg>
         </a>
+        <a  onClick={() => setShowCancelModal(true)} className="ml-3 cursor-pointer inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
+          Cancel
+        </a>
       </div>
+     
+
+
+      
 
 
     </div>

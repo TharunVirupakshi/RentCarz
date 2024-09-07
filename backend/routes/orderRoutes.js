@@ -3,6 +3,11 @@ const router = express.Router();
 const db = require('../config/db'); // Import the database connection
 const { authenticateToken } = require('../middlewares/authMiddleware'); // Import the middleware
 
+const status = Object.freeze({
+  AVAILABLE: Symbol('AVAILABLE'),
+  RESERVED: Symbol('RESERVED')
+})
+
 router.post('/', authenticateToken, async (req, res) => {
   const { carID, custID, discountID, totCost } = req.body;
   console.log('[INFO] Received POST request to /api/orders', req.body);
@@ -20,6 +25,34 @@ router.post('/', authenticateToken, async (req, res) => {
           }
 
           try {
+
+             // Get today's date
+             const today = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+              // Check if the car is available in carStatus
+              const statusQuery = 'SELECT status FROM carStatus WHERE carID = ? FOR UPDATE';
+              const carStatus = await new Promise((resolve, reject) => {
+                  db.query(statusQuery, [carID], (err, result) => {
+                      if (err) reject(err);
+                      resolve(result[0]);
+                  });
+              });
+
+              if (carStatus?.status !== "AVAILABLE") {
+                throw new Error('Car is not available');
+              }
+
+              // Update car status to RESERVED
+              const updateStatusQuery = 'UPDATE carStatus SET status = "RESERVED" WHERE carID = ?';
+              await new Promise((resolve, reject) => {
+                  db.query(updateStatusQuery, [carID], (err) => {
+                      if (err) reject(err);
+                      resolve();
+                  });
+              });
+
+
+
               // Fetch a random assistant from the tripAsst table
               const assignAsstQuery = 'SELECT * FROM tripAsst WHERE tripAsst.deleted_at IS NULL ORDER BY RAND() LIMIT 1';
               const assistant = await new Promise((resolve, reject) => {

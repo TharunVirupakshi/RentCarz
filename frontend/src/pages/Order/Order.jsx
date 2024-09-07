@@ -159,13 +159,15 @@ const Order = () => {
 
         navigate('/payment', { state: { 
           orderId: data?.order?.insertId, 
-          totalCost: totalCost, custID: orderDetails.custID , 
+          totalCost: totalCost, custID: orderDetails.custID ,
+          carID: productID, 
           rentalStartDate: startDate.toISOString(), 
           rentalEndDate: endDate.toISOString()
         }})
 
       } catch (error) {
         console.error('(Order) Error fetching car    :', error.message);
+        alert('Something went wrong, try again later.')
       }
     };
 

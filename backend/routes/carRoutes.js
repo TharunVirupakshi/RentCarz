@@ -122,6 +122,39 @@ router.get('/availability/:carID', authenticateToken, (req, res)=>{
     });
 })
 
+router.post('/status', authenticateToken, async(req, res) => {
+    const {carID, status} = req.body
+    console.log('[INFO] Received GET request at /api/cars/status')
+
+    if (!carID || !status) {
+        return res.status(400).json({ success: false, message: 'Missing carID or status' });
+    }
+
+    try {
+        
+        const query = `UPDATE carStatus SET status = ? WHERE carID = ?`;
+        db.query(query, [status, carID], (err, result) => {
+            if (err) {
+              console.error('Error updating car status:', err.message);
+              return res.status(500).json({ success: false, message: 'Failed to update car status' });
+            }
+      
+            // Check if any rows were affected (in case carID doesn't exist)
+            if (result.affectedRows === 0) {
+              return res.status(404).json({ success: false, message: 'Car not found' });
+            }
+      
+            return res.json({ success: true, message: `Car status updated to ${status}` });
+          });
+    
+        
+      } catch (error) {
+        console.error('Error updating car status:', error);
+        return res.status(500).json({ success: false, message: 'Failed to update car status' });
+      }
+
+})
+
 
 
 
