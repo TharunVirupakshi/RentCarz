@@ -27,7 +27,7 @@ RentCarz is a comprehensive car rental system designed to streamline the process
 
 - Users can specify rental dates and hours to find available vehicles.
 - Real-time availability and pricing predictions are provided.
-- Users can select and book vehicles directly.
+- Handles concurrent user booking requests using pessimistic locking technique at the DB level and transaction level
 
 ### Demand Prediction
 - Machine learning algorithms predict future demand based on historical data.
