@@ -24,7 +24,7 @@ const ProductPage = () => {
         const carStatus = await APIService.checkAvailability(productID)
         console.log('(ProdPage) car: ',  data);
         console.log('(Stat) : ', carStatus?.isAvailable)
-        setIsAvailable(carStatus.isAvailable)
+        setIsAvailable(carStatus.isAvailable === 'FINISHED')
         setETRDate(carStatus.etrDate ?? null)
         setCarData(data[0]);
       } catch (error) {

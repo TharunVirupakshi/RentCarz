@@ -84,6 +84,15 @@ const APIService = {
       throw error; 
       }   
     },
+    getOrder: async(orderId)=> {
+      try {
+        const res = await api.get(`/api/orders/${orderId}`)
+        return res.data
+      } catch (error) {
+        throw error
+      }
+    }
+    ,
  createPayment: async(data)=>{
       try {
           const token = await getIDToken();
@@ -117,6 +126,17 @@ const APIService = {
             throw error;  
         }
     },
+    
+    endTrip: async(tripID) => {
+      try {
+        const res = await api.get(`/api/endTrip/${tripID}`)
+        return res.data
+      } catch (error) {
+        console.error('Error updating trip status', error.message)
+        throw error
+      }
+    }
+    ,
     getCoupon: async(couponCode)=>{
         try {
             const response = await api.get('/api/getCoupon', {params: {couponCode}})

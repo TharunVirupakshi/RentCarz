@@ -82,11 +82,11 @@ router.get('/:vehicleNo', authenticateToken, (req, res) => {
 });
 
 router.get('/availability/:carID', authenticateToken, (req, res)=>{
-    const { carID } = req.params.carID
-    console.log('[INFO] Received GET request at /api/cars/availability')
+    const  carID  = req.params.carID
+    console.log('[INFO] Received GET request at /api/cars/availability', carID)
     const sql = `
     SELECT 
-        rentalEndDate
+        *
     FROM 
         getsRented 
     WHERE 
@@ -107,13 +107,13 @@ router.get('/availability/:carID', authenticateToken, (req, res)=>{
              // Convert UTC to local timezone
              const localLatestRentalEndDate = new Date(latestRentalEndDate + 'Z');
 
-            
+            console.log('trip: ', result[0])
 
             //  console.log('Fetched end date:', localLatestRentalEndDate)
             //  console.log('Curent date:', CURRENT_DATE)
-             var isAvailable = true;
-            if(latestRentalEndDate)
-            isAvailable =  new Date(localLatestRentalEndDate).toLocaleDateString() < CURRENT_DATE.toLocaleDateString();
+             var isAvailable = result[0]?.status;
+            // if(latestRentalEndDate)
+            // isAvailable =  new Date(localLatestRentalEndDate).toLocaleDateString() < CURRENT_DATE.toLocaleDateString();
 
             // console.log('Availability: ', isAvailable);
             // console.log('Availability: ', isAvailable)

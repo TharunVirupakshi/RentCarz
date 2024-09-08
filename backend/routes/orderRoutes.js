@@ -105,6 +105,37 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/:orderId', async (req, res) => {
+    const orderId = req.params.orderId;
+
+    console.log('[INFO] Received GET request to /api/orders with orderId:', orderId);
+
+    if (!orderId) {
+        return res.status(400).json({ success: false, error: 'Missing fields!' });
+    }
+
+    try {
+        const sql = 'SELECT * FROM rentalOrder WHERE orderID = ?';
+
+        db.query(sql, [orderId], (err, result) => {
+            if (err) {
+                console.error('[ERROR] Error executing query:', err);
+                return res.status(500).json({ success: false, error: 'Internal Server Error' });
+            }
+
+            if (result.length === 0) {
+                return res.status(404).json({ success: false, error: `No order found with orderId: ${orderId}` });
+            }
+
+            res.json({ success: true, data: result[0] });
+        });
+        
+    } catch (error) {
+        console.error('[ERROR] Error fetching order:', error.message);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
 
 
 

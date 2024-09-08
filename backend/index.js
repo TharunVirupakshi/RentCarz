@@ -1063,14 +1063,23 @@ app.get('/api/getAllTrips',async(req, res)=>{
         console.log('CurDate formatted', formattedCurrentDate)
         console.log('Fetching trip for...', custID)
           // Fetch trips based on custID
+    //     const fetchTripsSQL =  `
+    //     SELECT getsRented.*, car.*,
+    //            DATE_FORMAT(getsRented.rentalStartDate, '%d-%m-%Y') AS startDate,
+    //            DATE_FORMAT(getsRented.rentalEndDate, '%d-%m-%Y') AS endDate,
+    //            CASE 
+    //            WHEN getsRented.rentalEndDate >= '${formattedCurrentDate}' THEN 1
+    //            ELSE 0
+    //        END AS status
+    //     FROM getsRented
+    //     INNER JOIN rentalOrder ON getsRented.orderID = rentalOrder.orderID
+    //     INNER JOIN car ON getsRented.carID = car.vehicleNo
+    //     WHERE rentalOrder.custID = ?
+    // `;
         const fetchTripsSQL =  `
-        SELECT getsRented.*, car.*,
-               DATE_FORMAT(getsRented.rentalStartDate, '%d-%m-%Y') AS startDate,
-               DATE_FORMAT(getsRented.rentalEndDate, '%d-%m-%Y') AS endDate,
-               CASE 
-               WHEN getsRented.rentalEndDate >= '${formattedCurrentDate}' THEN 1
-               ELSE 0
-           END AS status
+        SELECT getsRented.*, car.*, 
+        DATE_FORMAT(getsRented.rentalStartDate, '%d-%m-%Y') AS startDate,
+        DATE_FORMAT(getsRented.rentalEndDate, '%d-%m-%Y') AS endDate
         FROM getsRented
         INNER JOIN rentalOrder ON getsRented.orderID = rentalOrder.orderID
         INNER JOIN car ON getsRented.carID = car.vehicleNo
@@ -1093,6 +1102,90 @@ app.get('/api/getAllTrips',async(req, res)=>{
         res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 })
+
+app.get('/api/endTrip/:tripID', async (req, res) => {
+    const tripID = req.params.tripID; // Assuming tripID is passed as a query parameter
+    console.log('[INFO] GET request at /api/endTrip')
+    if (!tripID) {
+        return res.status(400).json({ success: false, error: 'Missing fields!' });
+    }
+
+    const fetchCarSql = `SELECT carID FROM getsRented WHERE tripID = ?`;
+    const updateTripStatusSql = `UPDATE getsRented SET status = 'FINISHED' WHERE tripID = ?`;
+    const updateCarStatusSql = `UPDATE carStatus SET status = 'AVAILABLE' WHERE carID = ?`;
+
+    try {
+        // Begin transaction
+        db.beginTransaction(async (err) => {
+            if (err) {
+                console.error('[ERROR] Could not start transaction:', err.message);
+                return res.status(500).json({ success: false, error: 'Internal Server Error' });
+            }
+
+            try {
+                // Step 1: Fetch carID from the tripID
+                db.query(fetchCarSql, [tripID], (err, results) => {
+                    if (err) {
+                        console.error('[ERROR] Could not fetch carID:', err.message);
+                        return db.rollback(() => {
+                            res.status(500).json({ success: false, error: 'Internal Server Error' });
+                        });
+                    }
+
+                    if (results.length === 0) {
+                        return db.rollback(() => {
+                            res.status(404).json({ success: false, error: 'Trip not found' });
+                        });
+                    }
+
+                    const carID = results[0].carID;
+
+                    // Step 2: Update the trip status to 'FINISHED'
+                    db.query(updateTripStatusSql, [tripID], (err, result) => {
+                        if (err) {
+                            console.error('[ERROR] Could not update trip status:', err.message);
+                            return db.rollback(() => {
+                                res.status(500).json({ success: false, error: 'Internal Server Error' });
+                            });
+                        }
+
+                        // Step 3: Update the car status to 'AVAILABLE'
+                        db.query(updateCarStatusSql, [carID], (err, result) => {
+                            if (err) {
+                                console.error('[ERROR] Could not update car status:', err.message);
+                                return db.rollback(() => {
+                                    res.status(500).json({ success: false, error: 'Internal Server Error' });
+                                });
+                            }
+
+                            // Step 4: Commit the transaction if everything is successful
+                            db.commit((commitErr) => {
+                                if (commitErr) {
+                                    console.error('[ERROR] Could not commit transaction:', commitErr.message);
+                                    return db.rollback(() => {
+                                        res.status(500).json({ success: false, error: 'Internal Server Error' });
+                                    });
+                                }
+
+                                // Success response
+                                res.status(200).json({ success: true, message: 'Trip ended and car status updated to AVAILABLE' });
+                            });
+                        });
+                    });
+                });
+            } catch (error) {
+                console.error('[ERROR] Error during transaction:', error.message);
+                db.rollback(() => {
+                    res.status(500).json({ success: false, error: 'Internal Server Error' });
+                });
+            }
+        });
+    } catch (error) {
+        console.error('[ERROR] Error in endTrip handler:', error.message);
+        return res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
 
 
 
