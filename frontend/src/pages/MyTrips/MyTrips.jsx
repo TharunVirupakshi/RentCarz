@@ -75,7 +75,7 @@ const ViewTrip = ({tripData, closeModal}) => {
           Order ID: <span className="text-sm font-semibold text-black">{orderData.orderID ?? '-'}</span>
         </p>
         <p className="text-gray-500 md:text-sm dark:text-gray-400">
-          Rental Cost: <span className="text-sm font-semibold text-black">{orderData.totCost  ?? '-'}</span>
+          Rental Cost: ₹<span className="text-sm font-semibold text-black">{orderData.totCost  ?? '-'}</span>
         </p>
         <p className="text-gray-500 md:text-sm dark:text-gray-400">
           Car Model: <span className="text-sm font-semibold text-black">{tripData.model ?? '-'}</span>
