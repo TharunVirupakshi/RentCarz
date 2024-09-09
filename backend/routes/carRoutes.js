@@ -107,16 +107,11 @@ router.get('/availability/:carID', authenticateToken, (req, res)=>{
              // Convert UTC to local timezone
              const localLatestRentalEndDate = new Date(latestRentalEndDate + 'Z');
 
-            console.log('trip: ', result[0])
-
-            //  console.log('Fetched end date:', localLatestRentalEndDate)
-            //  console.log('Curent date:', CURRENT_DATE)
+         
              var isAvailable = result[0]?.status;
             // if(latestRentalEndDate)
             // isAvailable =  new Date(localLatestRentalEndDate).toLocaleDateString() < CURRENT_DATE.toLocaleDateString();
 
-            // console.log('Availability: ', isAvailable);
-            // console.log('Availability: ', isAvailable)
              res.json({ carID, etrDate : localLatestRentalEndDate, isAvailable });
         }
     });

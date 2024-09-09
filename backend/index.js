@@ -1190,7 +1190,15 @@ app.get('/api/endTrip/:tripID', async (req, res) => {
 
 
 // Start the server
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// const HOSTNAME = '192.168.145.151'
+// app.listen(PORT, HOSTNAME,() => {
+//     console.log(`Server is running on port ${PORT}`);
+//   }); 
+
+

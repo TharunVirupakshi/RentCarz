@@ -58,7 +58,7 @@ const Order = () => {
     };
 
     fetchData();
-  }, [productID])
+  }, [])
 
  
   // Set time part to 0 for startDate

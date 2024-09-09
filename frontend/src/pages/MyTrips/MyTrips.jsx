@@ -8,7 +8,7 @@ import { auth } from '../../firebase/firebase'
 import APIService from '../../middleware/APIService'
 
 
-const ViewTrip = ({tripData, closeModal}) => {
+const ViewTrip = ({tripData, closeModal, refresh}) => {
 
   
 
@@ -40,6 +40,7 @@ const ViewTrip = ({tripData, closeModal}) => {
       const res = await APIService.endTrip(tripData.tripID)
       if(res.success) alert('Trip ended!')
       closeModal()
+      refresh()
     } catch (error) {
       alert('Something went wrong!')
     }
@@ -218,7 +219,7 @@ const MyTrips = () => {
     <Modal  show={viewOrderModal} size="md" onClose={closeViewOrderModal} popup>
       <Modal.Header><h3 className=" p-2 text-xl font-medium text-gray-900 dark:text-white">Details</h3></Modal.Header>
       <Modal.Body>
-         <ViewTrip tripData={tripData} closeModal={closeViewOrderModal} />
+         <ViewTrip tripData={tripData} closeModal={closeViewOrderModal} refresh={fetchTrips}/>
       </Modal.Body>  
     </Modal>
 </div>

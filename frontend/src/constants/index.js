@@ -1,4 +1,5 @@
 const LOCAL_SERVER = 'http://localhost:3000'
+// const LOCAL_SERVER = 'http://192.168.145.151:3000'
 
 const RATE_PER_DAY = 800
 

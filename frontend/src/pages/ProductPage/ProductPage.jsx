@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import APIService from '../../middleware/APIService';
 import { Button } from 'flowbite-react';
 import NO_IMG from '../../assets/car_no_image_small.jpg'
@@ -14,29 +14,38 @@ const ProductPage = () => {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true); // Loading state
   const [imgLoading, setImgLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
   console.log('(Prodpage) id:',productID)
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await APIService.getCar(productID);
+      const carStatus = await APIService.checkAvailability(productID)
+      console.log('(ProdPage) car: ',  data);
+      console.log('(Stat) : ', carStatus?.isAvailable)
+      setIsAvailable(carStatus.isAvailable === 'FINISHED')
+      setETRDate(carStatus.etrDate ?? null)
+      setCarData(data[0]);
+    } catch (error) {
+      setError(error)
+      console.log('(ProdPage) Error fetching car:', error.message);
+    } finally{
+      setLoading(false)
+    }
+  };
+
   useEffect(() => {
-
-    const fetchData = async () => {
-      try {
-        setError(null)
-        const data = await APIService.getCar(productID);
-        const carStatus = await APIService.checkAvailability(productID)
-        console.log('(ProdPage) car: ',  data);
-        console.log('(Stat) : ', carStatus?.isAvailable)
-        setIsAvailable(carStatus.isAvailable === 'FINISHED')
-        setETRDate(carStatus.etrDate ?? null)
-        setCarData(data[0]);
-      } catch (error) {
-        setError(error)
-        console.log('(ProdPage) Error fetching car:', error.message);
-      } finally{
-        setLoading(false)
-      }
-    };
-
     fetchData();
-  }, [])
+  }, [location])
+
+
+  const goToOrder = () => {
+    navigate(`/order/${carData?.vehicleNo}`)
+  }
 
   if(loading){
     return <div className='loadingSpinner'><Spinner/></div>
@@ -113,13 +122,8 @@ const ProductPage = () => {
                 </svg>
             </a> */}
             <div className="mt-5">
-              <Button disabled={!isAvailable}>
-                {isAvailable ? <Link to={`/order/${carData?.vehicleNo}`}>
-                 Rent
-                </Link>
-                :          
-                 "Rent"
-               }
+              <Button disabled={!isAvailable} onClick={goToOrder}>
+                Rent
               </Button>
             </div>
            

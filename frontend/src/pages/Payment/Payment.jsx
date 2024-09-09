@@ -91,7 +91,7 @@ const Payment = () => {
       if (response.success) {
         alert('Payment cancelled');
         setShowCancelModal(false);
-        navigate('/'); // Redirect user to the orders page or another relevant page
+        navigate(-1); // Redirect user to the orders page
       }
     } catch (error) {
       console.log('Error cancelling payment....', error);
