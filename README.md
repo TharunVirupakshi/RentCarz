@@ -20,9 +20,9 @@ RentCarz is a comprehensive car rental system designed to streamline the process
 - Vehicle availability is automatically updated post-booking or return.
 
 ### Booking and Reservation System
-<img width="480" alt="352717070-bc4bb43b-36cf-4d69-88ea-7584d1d0988e" src="https://github.com/user-attachments/assets/f725a031-4e88-46d6-ab62-867e10746444">
+<img width="420" alt="352717070-bc4bb43b-36cf-4d69-88ea-7584d1d0988e" src="https://github.com/user-attachments/assets/f725a031-4e88-46d6-ab62-867e10746444">
 
-<img width="480" alt="352717097-eba69790-e5b5-4982-a2ce-5cd9ef712010" src="https://github.com/user-attachments/assets/8cf4158d-546d-4cdf-a9ff-dffa52d41ebc">
+<img width="420" alt="352717097-eba69790-e5b5-4982-a2ce-5cd9ef712010" src="https://github.com/user-attachments/assets/8cf4158d-546d-4cdf-a9ff-dffa52d41ebc">
 
 
 - Users can specify rental dates and hours to find available vehicles.
