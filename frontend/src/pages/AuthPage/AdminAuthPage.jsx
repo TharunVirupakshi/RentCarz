@@ -5,6 +5,7 @@ import { Button, Checkbox, Label, TextInput } from 'flowbite-react';
 import { Alert } from 'flowbite-react';
 import { HiInformationCircle } from 'react-icons/hi';
 import { useAdminAuth } from '../../middleware/AdminAuthContext';
+import { getTokenInfo } from '../../firebase/firebase';
 
 
 
@@ -22,18 +23,24 @@ const {login, logout} = useAdminAuth()
 const handleLogin = async (e) => {
   e.preventDefault();
   try {
-    const data = await signIn(email, password)
-    if(data){
-        login()
+      const data = await signIn(email, password);
+
+      if (data) {
+        // Retrieve ID token and check for admin claim
+        const idTokenResult = await getTokenInfo();
+        console.log('Token info', idTokenResult)
+        if (idTokenResult.claims.admin) {
+          login();  // Admin user authenticated
+          navigate('/adminDashboard');  // Redirect to admin dashboard
+        } else {
+          throw new Error('You do not have admin access.');
+        }
+      }
+    } catch (error) {
+      logout();  // Ensure the user is logged out
+      console.error('Login error:', error.message);
+      setErrorMessage(error.message);
     }
-    // Redirect or perform other actions after successful login
-    navigate('/adminDashboard');
-  } catch (error) {
-    // Handle login errors (display error message, etc.)
-    logout()
-    console.error('Login error:', error.message);
-    setErrorMessage(error.message)
-  }
 };
 
 

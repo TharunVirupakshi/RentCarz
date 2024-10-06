@@ -32,6 +32,15 @@ const getIDToken = () => {
     });
 };
 
+const getTokenInfo = () => {
+  return auth.currentUser?.getIdTokenResult()
+    .then(tokenRes => {return tokenRes})
+    .catch(err => {
+      console.log('Err: Invalid Auth Token Firebase', err);
+      throw err; 
+    })
+}
+
 // const analytics = getAnalytics(app);
 
-export {app, auth, storage, getIDToken}
+export {app, auth, storage, getIDToken, getTokenInfo}

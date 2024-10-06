@@ -8,8 +8,8 @@ export {
     RATE_PER_DAY
 }
 
+// Some general ranges for car rental rates in India:
 
-// As of my last knowledge update in January 2022, here are some general ranges for car rental rates in India:
 
 // Economy Cars (Hatchbacks and Compact Sedans): ₹800 to ₹2,000 per day
 // Mid-Range Cars (Sedans and SUVs): ₹1,500 to ₹4,000 per day
