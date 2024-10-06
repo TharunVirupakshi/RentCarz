@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import ProductCard from './ProductCard'; // Adjust path if necessary
 import { BrowserRouter as Router } from 'react-router-dom';
 import '@testing-library/jest-dom';
@@ -12,41 +12,22 @@ const product = {
   photoUrl: 'https://example.com/car.jpg',
 };
 
-beforeAll(() => {
-  // Suppress all console logs and warnings
-  jest.spyOn(console, 'log').mockImplementation(() => {});
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
-
-afterAll(() => {
-  // Restore console functions
-  console.log.mockRestore();
-  console.warn.mockRestore();
-  console.error.mockRestore();
-});
-
-test('renders ProductCard with product data', async () => {
+test('renders ProductCard with product data', () => {
   render(
     <Router>
       <ProductCard product={product} />
     </Router>
   );
 
-  // Ensure image is not hidden initially
+  // Ensure the image is rendered correctly
   const img = screen.getByRole('img');
   expect(img).toBeInTheDocument();
-  expect(img).toHaveAttribute('src', 'https://example.com/car.jpg');
+  expect(img).toHaveAttribute('src', product.photoUrl); // Using product.photoUrl for dynamic reference
 
   // Check if the product model and branch name are rendered
-  expect(screen.getByText('Tesla Model S')).toBeInTheDocument();
-  expect(screen.getByText('Downtown')).toBeInTheDocument();
+  expect(screen.getByText(product.model)).toBeInTheDocument();
+  expect(screen.getByText(product.branchName)).toBeInTheDocument();
 
   // Check if the Rent button is present
-  expect(screen.getByRole('link', { name: /Rent/i })).toBeInTheDocument();
-
-  // Wait for any state updates or async operations to complete
-  await waitFor(() => {
-    expect(screen.getByRole('link', { name: /Rent/i })).toBeInTheDocument();
-  });
+  expect(screen.getByRole('link', { name: /rent/i })).toBeInTheDocument(); // Assumes Rent button is a link
 });

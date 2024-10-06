@@ -27,7 +27,7 @@ const ProductPage = () => {
       const carStatus = await APIService.checkAvailability(productID)
       console.log('(ProdPage) car: ',  data);
       console.log('(Stat) : ', carStatus?.isAvailable)
-      setIsAvailable(carStatus.isAvailable === 'FINISHED')
+      setIsAvailable(carStatus.isAvailable !== 'RUNNING')
       setETRDate(carStatus.etrDate ?? null)
       setCarData(data[0]);
     } catch (error) {
@@ -65,8 +65,8 @@ const ProductPage = () => {
 
         {imgLoading && (
           <div className="animate-pulse w-full h-full">
-            <div class="flex items-center justify-center w-full h-full bg-gray-300 rounded sm:w-96 dark:bg-gray-700">
-              <svg class="w-10 h-10 text-gray-200 dark:text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+            <div className="flex items-center justify-center w-full h-full bg-gray-300 rounded sm:w-96 dark:bg-gray-700">
+              <svg className="w-10 h-10 text-gray-200 dark:text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
                 <path d="M18 0H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.376 10.481A1 1 0 0 1 16 15H4a1 1 0 0 1-.895-1.447l3.5-7A1 1 0 0 1 7.468 6a.965.965 0 0 1 .9.5l2.775 4.757 1.546-1.887a1 1 0 0 1 1.618.1l2.541 4a1 1 0 0 1 .028 1.011Z" />
               </svg>
             </div>
@@ -82,36 +82,36 @@ const ProductPage = () => {
         <div className="prod-desc my-5">
             <h2 className="text-4xl font-extrabold dark:text-white">{carData.model ?? 'Car Name'}</h2>
             
-                <dl class="max-w-md text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700 mt-5">
-                    <div class="flex flex-col pb-3">
-                        <dt class="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Type</dt>
-                        <dd class="text-lg font-semibold">{carData.carType ?? 'car type'}</dd>
+                <dl className="max-w-md text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700 mt-5">
+                    <div className="flex flex-col pb-3">
+                        <dt className="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Type</dt>
+                        <dd className="text-lg font-semibold">{carData.carType ?? 'car type'}</dd>
                     </div>
-                    <div class="flex flex-col py-3">
-                        <dt class="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Location</dt>
-                        <dd class="text-lg font-semibold">{carData.branchName ?? 'branch name'} - {carData.address ?? ' '}</dd>
+                    <div className="flex flex-col py-3">
+                        <dt className="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Location</dt>
+                        <dd className="text-lg font-semibold">{carData.branchName ?? 'branch name'} - {carData.address ?? ' '}</dd>
                     </div>
-                    <div class="flex flex-col pt-3">
-                        <dt class="mb-2 text-gray-500 md:text-lg dark:text-gray-400">Status</dt>
+                    <div className="flex flex-col pt-3">
+                        <dt className="mb-2 text-gray-500 md:text-lg dark:text-gray-400">Status</dt>
                         {isAvailable ?  
-                        <span class={"w-min inline-flex items-center bg-green-100 text-green-800 text-m font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"}>
-                          <span class="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
+                        <span className={"w-min inline-flex items-center bg-green-100 text-green-800 text-m font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"}>
+                          <span className="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
                           Available
                         </span> : <>
 
-                        <span class="w-min inline-flex items-center bg-red-100 text-red-800 text-m font-medium px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                          <span class="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
+                        <span className="w-min inline-flex items-center bg-red-100 text-red-800 text-m font-medium px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                          <span className="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
                           Unavailable
                         </span>
-                        <div class="flex flex-col py-3">
-                        <dt class="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Available after</dt>
-                        <dd class="text-lg font-semibold">{new Date(ETRDate).toISOString().split('T')[0] ?? ' '}</dd>
+                        <div className="flex flex-col py-3">
+                        <dt className="mb-1 text-gray-500 md:text-lg dark:text-gray-400">Available after</dt>
+                        <dd className="text-lg font-semibold">{new Date(ETRDate).toISOString().split('T')[0] ?? ' '}</dd>
                        </div>
                         </>
 
                         }
                        
-              {/* <dd class="text-lg font-semibold ">{isAvailable ? 'Available' : 'Rented out'}</dd> */}
+              {/* <dd className="text-lg font-semibold ">{isAvailable ? 'Available' : 'Rented out'}</dd> */}
                     </div>
                 </dl>
 

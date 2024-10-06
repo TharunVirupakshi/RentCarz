@@ -16,30 +16,24 @@ jest.mock('react-router-dom', () => ({
   useParams: () => ({ productID: '123' }),
 }));
 
-
 describe('Loading Spinner Test', () => {
-    test('renders loading spinner initially', async () => {
-  // Mock the API calls to simulate the loading state
-  jest.mock('../../middleware/APIService', () => ({
-    getCar: jest.fn().mockResolvedValue([]),
-    checkAvailability: jest.fn().mockResolvedValue({ isAvailable: false })
-  }));
+  test('renders loading spinner initially', async () => {
+    // Mock the API calls to simulate the loading state
+    require('../../middleware/APIService').getCar.mockResolvedValueOnce([]); // Use mockResolvedValueOnce for specific test behavior
+    require('../../middleware/APIService').checkAvailability.mockResolvedValueOnce({ isAvailable: false });
 
-  // Render the component
-  render(<ProductPage />, { wrapper: MemoryRouter });
+    // Render the component
+    render(<ProductPage />, { wrapper: MemoryRouter });
 
-  // Check if the loading spinner is rendered
-  expect(screen.getByRole('status')).toBeInTheDocument(); // Adjust this if your spinner does not have the role 'status'
+    // Check if the loading spinner is rendered
+    expect(screen.getByRole('status')).toBeInTheDocument(); // Adjust this if your spinner does not have the role 'status'
+  });
 });
-})
-
-
 
 describe('ProductPage Component Rent Button', () => {
-
   test('shows Rent button as enabled when the car is available', async () => {
     // Mock the availability status as available
-    require('../../middleware/APIService').checkAvailability.mockResolvedValue({ isAvailable: true, etrDate: null });
+    require('../../middleware/APIService').checkAvailability.mockResolvedValueOnce({ isAvailable: true, etrDate: null });
 
     render(
       <MemoryRouter>
@@ -61,7 +55,7 @@ describe('ProductPage Component Rent Button', () => {
 
   test('shows Rent button as disabled when the car is unavailable', async () => {
     // Mock the availability status as unavailable
-    require('../../middleware/APIService').checkAvailability.mockResolvedValue({ isAvailable: false, etrDate: '2024-09-01T00:00:00Z' });
+    require('../../middleware/APIService').checkAvailability.mockResolvedValueOnce({ isAvailable: 'RUNNING', etrDate: '2024-09-01T00:00:00Z' });
 
     render(
       <MemoryRouter>
@@ -80,5 +74,4 @@ describe('ProductPage Component Rent Button', () => {
     expect(rentButton).toBeInTheDocument();
     expect(rentButton).toBeDisabled();
   });
-
 });
